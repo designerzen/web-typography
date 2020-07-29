@@ -1,0 +1,536 @@
+/////////////////////////////////////////////////////////////////
+//
+// Simple Clamped Typographc with variable modular scale with
+// Logarythmic Headline scaling and global zoom factor
+//
+// We use SCSS variables as the media queries prevent
+// us using css variables across the board sadly :(
+// 
+// You can use the html file to perfect your own settings
+//
+// calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width])));
+// calc([minimum size] + ([font range]) * ( (100vw - [minimum viewport width]) / [viewport width range] ));
+// calc([minimum size] + ([font range]) * ( (100vw - [viewport ratio] ));
+//
+/////////////////////////////////////////////////////////////////
+
+// OPTIONS ------------------------------------------------------
+// Overall font size zoom 
+$browser-default-size:16;
+
+// Changing this does not impact on browser setting so +1 a18y
+// NB. 16px = 100% therefore 10px = 100/16 * 10
+$font-zoom:16 / $browser-default-size; // 10/16 //0.625; //0.625
+
+// These are (r)ems sizes (not pixels)
+$viewport-min-width:230;
+$viewport-max-width:540;
+
+// Viewport in (r)ems
+// NB. multiple by 16 to get approx size in pixels for default browser font size
+// NB. Omit units
+$viewport-min:$viewport-min-width / $browser-default-size;//20;	    // about 320px
+$viewport-max:$viewport-max-width / $browser-default-size;//740/16;	// about 16x 
+
+// The amount wide that a single sentence can extend to
+// Use 'ch' - a relative unit, defined as the width of the 0 character in the element’s font.
+// Because narrow characters like l and i are relatively frequent, 
+// setting the width of a text container to something like 50ch should result in 
+// lines that are 60-70 character long.
+$readable-width:50ch;
+
+// Overridden via more specific inline media queries below
+:root{
+	// global overall zoom affects all elements (even images!)
+    --zoom:1;
+
+	// A global scale factor only for fonts -
+	// a float based percentage font zooms just the text bits
+    --font-zoom:1;
+    
+	// shared line-height (can set to whatever you like)
+	// NB. Will scale proportionally if left as a simple number
+	--line-height:1.6;
+	
+	// vertical rythmn & margin balance
+	--balance:0.5;
+	
+    // harmonic headline relationship (perfect fourth)
+	--harmonic:1.333;
+	// 7/5.5;// 5/4;//1.22; //5/3;//1.581;
+    
+    // This is the size that the smallest elements scale down to in pixels
+    // NB. The zoom factor above has influence on these calculations...
+    // font sizes in ems (see above for how to set in pixel sizes)
+    // NB. Omit units : *always* in EMs (but leave unitless)
+	--font-size-min:1;
+	--font-size-max:3;
+
+    // If you specify the dropcap attribute on a paragraph
+    // The very first initial will be styled larger 
+    // The following variables allows you to control
+    // how many vertical lines are covered
+    --drop-cap-lines:3;
+    
+    // one unit of padding
+    --padding-unit:1rem;
+
+	// CALCULATIONS AND VARS - DO NOT ALTER ----------------------
+	
+	// Viewport -----
+	// In Rems 
+	--viewport-width-min:#{$viewport-min};
+	--viewport-width-max:#{$viewport-max};
+	// Give the height - width of the viewport
+	--viewport-range: calc( ( var(--viewport-width-max)) - ( var(--viewport-width-min) ) );
+	
+	// NB. You can only divide by a unitless value
+	// NB. Keep in REM format to negate need for inverse-zoom
+	--viewport-space:calc( 100vw - (var(--viewport-width-min) * 1rem )); 
+	
+	// Full viewport width - max viewport width / height - width
+	--viewport-scale:calc( var(--viewport-space) / var(--viewport-range) );
+	
+	// Fonts ----
+	// global font scaling we can turn any h into any other h with a handy local override
+	// NB. Do NOT change this here (it is not a settings but a calculation)
+	--font-scale:1;
+	--text-size-min:calc( var(--font-size-min) / #{$browser-default-size} ); // 1rem;
+	
+    // Range of font sizes (big - small)
+	--font-size-range:calc( var(--font-size-max) - var(--font-size-min) );
+
+	// NB. Always use REMS to preserve scaling and accessibility
+	// https://blog.typekit.com/2016/08/17/flexible-typography-with-css-locks/
+	// https://madebymike.com.au/writing/fluid-type-calc-examples/
+	// font-size: calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width])));
+	// Set the baseline font size for universal use
+	//--font-base:calc( var(--font-size-min) + var(---font-size-range) * var(--viewport-range ) );
+	// calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width])));
+	--font-base:calc( var(--text-size-min) + (var(--font-size-max) - var(--font-size-min)) * (( 100vw - var(--viewport-width-min-min)) / (var(--viewport-width-min-max) - var(--viewport-width-min-min) ) ) );
+	
+	// --font-base:calc( var(---font-size-range) * ((100vw - var(--font-viewport-min)) / var(---font-size-range)) );
+	// --font-base:calc(var(--font-size-min) + 1vmin );
+	//--font-base: calc(16px + 1vw + 1vh + .25vmin);
+
+	// https://www.24a11y.com/2019/pixels-vs-relative-units-in-css-why-its-still-a-big-deal/
+    //--font-size:calc( var(---font-size-range) * ((100vw - var(--font-viewport-min)) / (var(--font-viewport-max) - var(--font-viewport-min))));
+    //--font-size:calc( var(--zoom, 1) * var(--font-scale) * var(--font-base) );
+    // --font-size: calc( 1rem * var(--rhythm-size) / var(--line-height));
+	
+	// default size is smallest as a fallback
+	--font-size:calc( var(--font-size-min) * 1rem );
+	
+	// Columns -----
+	--column-count:auto;
+
+	// space between columns
+	--column-gap: var(--padding-unit);
+	
+    // Max text width (can be based on font size or percentage or characters)
+    // Recomended is 60ch but you can have a pixel or rem width too
+    // or set no value at all by changing it to auto
+	--text-max-width:auto;
+	
+	// Harmonic scales for scaling harmonically
+	// ↑ Upper ↑
+	--s1:calc( var(--harmonic) );
+	--s2:calc( var(--s1) * var(--harmonic) );
+	--s3:calc( var(--s2) * var(--harmonic) );
+	--s4:calc( var(--s3) * var(--harmonic) );
+	--s5:calc( var(--s4) * var(--harmonic) );
+	--s6:calc( var(--s5) * var(--harmonic) );
+	
+	// ↓ Lower ↓
+	--i1:calc( 1 / var(--harmonic) );
+	--i2:calc( var(--i1) / var(--harmonic) );
+	--i3:calc( var(--i2) / var(--harmonic) );
+	--i4:calc( var(--i3) / var(--harmonic) );
+	--i5:calc( var(--i5) / var(--harmonic) );
+	--i6:calc( var(--i6) / var(--harmonic) );
+	
+	// generic block height with units
+	--block-size:calc( var(--font-scale) * var(--font-size) * var(--line-height));
+}
+
+// Set up the global fonts (variable if possible)
+html { 
+	// OPINIONATED : Consistent line spacing
+	// CSS Inline Layout Module Level 3:
+	// https://drafts.csswg.org/css-inline-3/#line-sizing-property
+    line-sizing: normal;
+    
+  	// Setup default global font scale ( defaults to 0.625% = 10px )
+	font-size: calc( var(--font-zoom) * 100%, 100% );
+	line-height:calc( var(--line-height) * var(--zoom, 1), 1.5);
+}
+
+html,body{
+
+}  
+
+/////////////////////////////////////////
+// Headlines
+/////////////////////////////////////////
+h1,h2,h3,h4,h5,h6{
+
+    // Optional:
+	// text-transform:uppercase;
+	
+	// remove bold
+	font-weight: initial;
+
+	// Breaks words to prevent overflow in all browsers (opinionated).
+	word-break: break-word;
+}
+
+// Big headlines
+// clear line height for big titles
+h1,h2,h3,h4{
+	--line-height:1;
+}
+h1 {
+	--font-scale:var(--s6, 6);
+}
+h2 {
+	--font-scale:var(--s5, 5);
+}
+h3{
+	--font-scale:var(--s4, 4);
+}
+h4{
+	--font-scale:var(--s3, 3);
+}
+h5{
+	--font-scale:var(--s2, 2);
+}
+h6{
+	--font-scale:var(--s1, 1);
+}
+pre,
+small{
+	--font-scale:var(--i1, 0);
+}
+
+// All over nicer typography
+h1,h2,h3,h4,h5,h6,p{
+
+	// OPIONATED : hyphenation
+    // http://clagnut.com/blog/2395
+    // hyphenation onto multiple lines
+	hyphens:auto;
+
+	// hyphenation from the future
+	hyphenate-limit-chars: 6 3 3;
+	hyphenate-limit-lines: 2;
+	hyphenate-limit-last: auto;
+	hyphenate-limit-zone: 8%;  
+
+	// inline fractions where supported
+	font-variant-numeric: stacked-fractions;
+
+    // replace margin with padding ?
+    // OPIONATED : remove bottom margins for all texts
+	margin:0;
+
+	//font-size:calc( var(--font-scale) * var(--font-base) );//* var(--font-scale));
+	//--r:calc( var(--font-size) / 2 );
+	// margin-top:calc(var(--r) );
+	// margin-bottom:calc(var(--r) );
+}
+
+
+/////////////////////////////////////////
+// Paragraphs
+/////////////////////////////////////////
+p{
+	// CUSTOM Fonts settings :
+	// Set up the variable font width settings
+	font-variation-settings: 'LXND' var(--font-width);
+
+    // fixed maximum width for single columns?
+    // No, use columns instead?!
+	//max-width:var(--readable-width, $readable-width);
+
+	// If you want a background colour that isn't white
+	//background-color:var(--col-bg);
+
+    // OPINIONATED : Custom padding
+	margin:0;// var(--padding-unit);
+	// padding: var(--padding-unit)  var(--padding-unit);
+	
+    // Optional / Recommended
+    // Improves readability and good for UX
+	// max-width:100%;
+	// max-width:var(--text-max-width);
+    column-width: var(--text-max-width);
+	
+    // you can use these to override behaviour
+    // for elements within the p tags
+    // column-fill :auto;
+    // column-span:all;
+	column-gap: var(--column-gap, var(--padding-unit));
+	column-count: var(--column-count);
+}
+
+// Ensure that paragraphs look good when stacked
+p + p {
+	margin-top: calc( var(--padding-unit) );
+}
+// Unneccessary?
+blockquote p + p{
+	margin-top: calc( var(--padding-unit) );
+}
+
+// FIXME: LTR for RTL swap around?
+blockquote cite{
+    &::before{
+        content:'—';
+    }
+}
+// Variants ---------------------------------------------
+
+// Drop caps first letter on first paragraph only
+// p:first-child:first-letter,
+p.dropcap:first-letter,
+p[dropcap]:first-letter {
+    
+    box-sizing:border-box;
+    float: left;
+    padding:0 1.2rem 0 0 ;
+    line-height:1;
+    //--font-size:calc( var(--font-base) * var(--drop-cap-lines) );
+    //font-size:calc( var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--font-size) );
+    //font-size: calc( 1rem * var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--line-height) * var(--drop-cap-lines) );
+    --font-scale:calc( var(--drop-cap-lines) );
+    font-size:calc( var(--zoom, 1) * var(--font-zoom) * var(--font-scale) * var(--font-size) );
+    // OPINIONATED : Change to serif
+    //font-family:var(--font-family-serif);
+}
+
+// Drop Caps native
+// https://caniuse.com/#feat=css-initial-letter
+@supports(initial-letter:normal){
+    // :first-child
+    p.dropcap:first-letter,
+    p[dropcap]:first-letter {
+        font-size:auto;
+        // Use built in method for resize
+        initial-letter: var(--drop-cap-lines);
+        // FIX: safari
+        margin-top: 1em;
+    }
+}
+
+blockquote{
+	margin:0;
+	margin-top:var(--padding-unit);
+    // padding:var(--padding-unit);
+}
+
+// Paragraphs inside blockquotes
+blockquote p{
+	margin:0;
+    // you can use these to override behaviour
+    // for elements within the p tags
+    column-fill :auto;
+    column-span:all;
+}
+
+// BOLDS -----------------
+b,
+strong{
+    font-weight: bolder;
+}
+
+kbd,
+em, 
+legend{
+	font-weight: bold;
+}
+
+em{
+    font-style: italic;
+}
+
+// draw a box behind it
+mark{
+    --overhang:0.24;
+    margin: calc( -1rem * var(--overhang) );
+    padding: calc( 1rem * var(--overhang) );
+}
+
+// abbreviation [title] 
+abbr{
+	// dotty floor? question mark cursor?
+	border-bottom: none;
+	text-decoration: underline; 
+	text-decoration: underline dotted; 
+}
+
+// Fixes
+legend{
+	white-space: normal; 
+	box-sizing: border-box;
+	display: table; 
+	max-width: 100%;
+	color: inherit;
+}
+
+// MONOSPACE ----
+pre,
+code,
+kbd,
+samp {
+  font-family: monospace, monospace;
+}
+
+// Fixes some browser issues on older 
+small {
+	font-size: 80%;
+}
+
+
+sub,
+sup {
+	// old issue with line-height being borked
+  	line-height: 0;
+}
+/////////////////////////////////////////
+// Screen Sized Variants ---------------
+/////////////////////////////////////////
+
+// media queries force font scaling only between the two viewport sizes
+/*
+// 2 Columns
+@media screen and (min-width:80ch ) {
+
+	:root{
+		
+		--column-count: 2;
+		--column-gap: var(--padding-unit);
+		// or fixed widths
+		// column-width: 100ch;
+
+		--text-max-width:#{$readable-width};
+	}
+}
+
+*/
+
+// 3 columns +
+/* @media screen and ( min-width:calc( #{$readable-width} * 3 + var(--p) * 2 + var(--p) * 2 - 1px ) ) { */
+// @media screen and ( min-width:160ch ) {
+
+// 	:root{
+// 		--column-count: auto;
+// 	}
+// }
+
+
+
+
+
+
+
+// Super scaling text ---------------------------------
+
+// list here all items that you want to scale proprtionally 
+// to the screen size
+h1,h2,h3,h4,h5,h6,
+p,
+small, 
+pre{
+	
+	// This needs to be a value that alters in relation
+	// to the viewport size but we can use the calc
+	//--flexible: calc(var( --viewport-width-min) * 0.2vw) ; 
+	--flexible: calc( var(--font-size-range) * var(--viewport-scale) );
+
+	// we still want the same calculation as liquid in the middle of clamp
+	// ems or rems?
+	--font-size:clamp( var(--font-size-min) * 1rem, var(--flexible), var(--font-size-max) * 1rem );
+	font-size:calc( var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--font-size) );
+	line-height:calc( var(--line-height) * var(--zoom));
+}
+
+// FALLBACK : no native clamping
+@supports not ( font-size:clamp(1rem,1rem,1rem) ){
+	
+	// FIXED ----------------------------
+	h1,h2,h3,h4,h5,h6,
+	p,
+	small, 
+	pre{
+
+		// you have to set both of these for them to take affect
+		--font-size:calc( var(--font-size-min) * 1rem );
+		font-size:calc( var(--zoom, 1) * var(--font-scale) * var(--font-zoom) * var(--font-size) );
+		line-height:calc( var(--zoom, 1) * var(--line-height));
+		margin:0;
+		padding:0;
+		display: block;
+	}
+
+	// FLUID ------------------------------------------------------------------
+	// Scaling viewport-width (can't use vars here :( ))
+	// NB. Always use REMS here rather than EMS
+	$media-min:$viewport-min * 1rem * $font-zoom;
+	@media screen and (min-width: #{$media-min} ) {
+		
+		:root{
+			--font-size: calc( var(--font-size-min) * 1em + var(--font-size-range) * var(--viewport-scale) );
+		}
+		
+		h1,h2,h3,h4,h5,h6,
+		p,
+		small, 
+		pre{
+			
+			// pixel percentage * max line height in pixels
+			//--line-height:  calc( 1em + 1em * var(--viewport-scale) );
+			// NB. var(--viewport-scale) is in PIXELS
+			--font-size: calc( var(--font-size-min) * 1em + var(--font-size-range) * var(--viewport-scale) );
+			font-size:calc( var(--zoom, 1) * var(--font-zoom) * var(--font-scale) * var(--font-size) );
+			// line-height:calc( var(--line-height) * var(--zoom, 1));
+		}
+	}
+
+	// FIXED ---------------------------------------------------------------
+	$media-max:$font-zoom * $viewport-max * 1rem;
+	@media screen and (min-width:  #{$media-max} ) {
+		
+		:root{
+			--font-size: calc( var(--font-size-max) * 1rem);
+		}
+		
+		h1,h2,h3,h4,h5,h6,
+		p,
+		small, 
+		pre{
+			--font-size: calc( var(--font-size-max) * 1rem);
+			font-size:calc( var(--zoom, 1) * var(--font-zoom) * var(--font-scale) * var(--font-size));
+		}
+	}
+
+}
+
+
+
+/*
+
+/////////////////////////////////////////
+// Paddings if wanted
+/////////////////////////////////////////
+h3,h4,h5,h6,p{
+	// to set custom margins, you need to discover how much space is left over once the font-size has been deducted from a multiple of the block size
+	// 	padding-bottom:calc(var(--block-size) * var(--balance));
+	// padding-top:calc(var(--block-size) * ( 1 - var(--balance) ) );
+}
+
+h6,p{
+	padding-bottom:calc( var(--block-size) * var(--balance));
+	padding-top:calc( var(--block-size) * ( 1 - var(--balance) ) );
+}
+
+*/
