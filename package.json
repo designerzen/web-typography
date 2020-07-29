@@ -1,0 +1,18 @@
+{
+  "name": "web-typography",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/designerzen/web-typography.git",
+  "author": "designerzen <designerzen@gmail.com>",
+  "license": "GPL2.0",
+  "private": false,
+  "devDependencies": {
+    "parcel": "^2.0.0-beta.1",
+    "sass": "^1.26.10"
+  },
+  "scripts": {
+    "build": "parcel build ./index.pug --dist-dir ./lib/",
+    "serve": "parcel serve ./index.pug",
+    "browserlist": "npx browserslist"
+  }
+}
