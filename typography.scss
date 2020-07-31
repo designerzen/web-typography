@@ -8,6 +8,7 @@
 // 
 // You can use the html file to perfect your own settings
 //
+// Formula : 
 // calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width])));
 // calc([minimum size] + ([font range]) * ( (100vw - [minimum viewport width]) / [viewport width range] ));
 // calc([minimum size] + ([font range]) * ( (100vw - [viewport ratio] ));
@@ -23,11 +24,11 @@ $browser-default-size:16;
 $font-zoom:16 / $browser-default-size; // 10/16 //0.625; //0.625
 
 // These are (r)ems sizes (not pixels)
+// NB. multiple by 16 to get approx size in pixels for default browser font size
 $viewport-min-width:230;
 $viewport-max-width:540;
 
 // Viewport in (r)ems
-// NB. multiple by 16 to get approx size in pixels for default browser font size
 // NB. Omit units
 $viewport-min:$viewport-min-width / $browser-default-size;//20;	    // about 320px
 $viewport-max:$viewport-max-width / $browser-default-size;//740/16;	// about 16x 
@@ -73,7 +74,11 @@ $readable-width:50ch;
     --drop-cap-lines:3;
     
     // one unit of padding
-    --padding-unit:1rem;
+	--padding-unit:1rem;
+	
+	--font-family:sans-serif;
+	--font-family-headlines:var(--serif, serif);
+	--font-family-mono:monospace;
 
 	// CALCULATIONS AND VARS - DO NOT ALTER ----------------------
 	
@@ -165,9 +170,30 @@ html {
 	line-height:calc( var(--line-height) * var(--zoom, 1), 1.5);
 }
 
+///////////////////////////////////////////////////////////////////
+// ---------------------------- >8 -------------------------------
+// FONTS
 html,body{
-
+	font-family:var(--font-family);
+	// OPIONATED : inline fractions where supported
+	font-variant-numeric: stacked-fractions;
 }  
+
+h1,h2,h3,h4,h5,h6{
+	font-family: var(--font-family-headlines);
+	// OPIONATED : remove bold
+	font-weight: initial;
+}
+
+pre,
+code,
+kbd,
+samp {
+	font-family:var(--font-family-mono);
+}
+
+
+
 
 /////////////////////////////////////////
 // Headlines
@@ -177,15 +203,34 @@ h1,h2,h3,h4,h5,h6{
     // Optional:
 	// text-transform:uppercase;
 	
-	// remove bold
-	font-weight: initial;
-
 	// Breaks words to prevent overflow in all browsers (opinionated).
 	word-break: break-word;
 }
 
-// Big headlines
+// All over nicer typography
+h1,h2,h3,h4,h5,h6,p{
 
+	// OPIONATED : hyphenation
+    // http://clagnut.com/blog/2395
+    // hyphenation onto multiple lines
+	hyphens:auto;
+
+	// hyphenation from the future
+	hyphenate-limit-chars: 6 3 3;
+	hyphenate-limit-lines: 2;
+	hyphenate-limit-last: auto;
+	hyphenate-limit-zone: 8%;  
+
+	
+    // replace margin with padding ?
+    // OPINIONATED : remove bottom margins for all texts
+	margin:0;
+}
+
+
+///////////////////////////////////////////////////////////////////
+// ---------------------------- >8 -------------------------------
+// SIZES
 h1 {
 	--font-scale:var(--s6, 6);
 }
@@ -209,32 +254,6 @@ small{
 	--font-scale:var(--i1, 0);
 }
 
-// All over nicer typography
-h1,h2,h3,h4,h5,h6,p{
-
-	// OPIONATED : hyphenation
-    // http://clagnut.com/blog/2395
-    // hyphenation onto multiple lines
-	hyphens:auto;
-
-	// hyphenation from the future
-	hyphenate-limit-chars: 6 3 3;
-	hyphenate-limit-lines: 2;
-	hyphenate-limit-last: auto;
-	hyphenate-limit-zone: 8%;  
-
-	// inline fractions where supported
-	font-variant-numeric: stacked-fractions;
-
-    // replace margin with padding ?
-    // OPIONATED : remove bottom margins for all texts
-	margin:0;
-
-	//font-size:calc( var(--font-scale) * var(--font-base) );//* var(--font-scale));
-	//--r:calc( var(--font-size) / 2 );
-	// margin-top:calc(var(--r) );
-	// margin-bottom:calc(var(--r) );
-}
 
 
 /////////////////////////////////////////
@@ -245,96 +264,36 @@ p{
 	// Set up the variable font width settings
 	font-variation-settings: 'LXND' var(--font-width);
 
-    // fixed maximum width for single columns?
-    // No, use columns instead?!
-	//max-width:var(--readable-width, $readable-width);
-
-	// If you want a background colour that isn't white
-	//background-color:var(--col-bg);
-
     // OPINIONATED : Custom padding
 	margin:0;// var(--padding-unit);
 	// padding: var(--padding-unit)  var(--padding-unit);
 	
     // Optional / Recommended
-    // Improves readability and good for UX
+	// Improves readability and good for UX
+    // fixed maximum width for single columns?
+    // No, use columns instead (check avail)?!
+	//max-width:var(--readable-width, $readable-width);
 	// max-width:100%;
 	// max-width:var(--text-max-width);
-    column-width: var(--text-max-width);
+    column-width: var(--text-max-width, $readable-width);
 	
     // you can use these to override behaviour
     // for elements within the p tags
     // column-fill :auto;
     // column-span:all;
 	column-gap: var(--column-gap, var(--padding-unit));
-	column-count: var(--column-count);
+	column-count: var(--column-count, auto);
 }
 
 // Ensure that paragraphs look good when stacked
 p + p {
 	margin-top: calc( var(--padding-unit) );
 }
-// Unneccessary?
-blockquote p + p{
-	margin-top: calc( var(--padding-unit) );
-}
 
-// FIXME: LTR for RTL swap around?
-blockquote cite{
-    &::before{
-        content:'—';
-    }
-}
 // Variants ---------------------------------------------
 
-// Drop caps first letter on first paragraph only
-// p:first-child:first-letter,
-p.dropcap:first-letter,
-p[dropcap]:first-letter {
-    
-    box-sizing:border-box;
-    float: left;
-    padding:0 1.2rem 0 0 ;
-    line-height:1;
-    //--font-size:calc( var(--font-base) * var(--drop-cap-lines) );
-    //font-size:calc( var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--font-size) );
-    //font-size: calc( 1rem * var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--line-height) * var(--drop-cap-lines) );
-    --font-scale:calc( var(--drop-cap-lines) );
-    font-size:calc( var(--zoom, 1) * var(--font-zoom) * var(--font-scale) * var(--font-size) );
-    // OPINIONATED : Change to serif
-    //font-family:var(--font-family-serif);
-}
 
-// Drop Caps native
-// https://caniuse.com/#feat=css-initial-letter
-@supports(initial-letter:normal){
-    // :first-child
-    p.dropcap:first-letter,
-    p[dropcap]:first-letter {
-        font-size:auto;
-        // Use built in method for resize
-        initial-letter: var(--drop-cap-lines);
-        // FIX: safari
-        margin-top: 1em;
-    }
-}
-
-blockquote{
-	margin:0;
-	margin-top:var(--padding-unit);
-    // padding:var(--padding-unit);
-}
-
-// Paragraphs inside blockquotes
-blockquote p{
-	margin:0;
-    // you can use these to override behaviour
-    // for elements within the p tags
-    column-fill :auto;
-    column-span:all;
-}
-
-// BOLDS -----------------
+// BOLDS & STYLES -----------------
 b,
 strong{
     font-weight: bolder;
@@ -361,25 +320,18 @@ mark{
 abbr[title] {
 	// dotty floor? question mark cursor?
 	border-bottom: none;
+	// fallback
 	text-decoration: underline; 
 	text-decoration: underline dotted; 
 }
 
-// Fixes
+// Fixes inconsitsnt browsers
 legend{
 	white-space: normal; 
 	box-sizing: border-box;
 	display: table; 
 	max-width: 100%;
 	color: inherit;
-}
-
-// MONOSPACE ----
-pre,
-code,
-kbd,
-samp {
-  font-family: monospace, monospace;
 }
 
 // Fixes some browser issues on older 
@@ -549,4 +501,76 @@ h6,p{
 	padding-top:calc( var(--block-size) * ( 1 - var(--balance) ) );
 }
 
+	//font-size:calc( var(--font-scale) * var(--font-base) );//* var(--font-scale));
+	//--r:calc( var(--font-size) / 2 );
+	// margin-top:calc(var(--r) );
+	// margin-bottom:calc(var(--r) );
 */
+
+
+
+
+///////////////////////////////////////////////////////////////////
+// ---------------------------- >8 -------------------------------
+// BLOCK QUOTE
+
+blockquote{
+	margin:0;
+	margin-top:var(--padding-unit);
+    // padding:var(--padding-unit);
+}
+
+// Paragraphs inside blockquotes
+blockquote p{
+	margin:0;
+    // you can use these to override behaviour
+    // for elements within the p tags
+    column-fill :auto;
+    column-span:all;
+}
+
+// FIXME: LTR for RTL swap around?
+blockquote cite{
+    &::before{
+        content:'—';
+    }
+}
+
+///////////////////////////////////////////////////////////////////
+// ---------------------------- >8 -------------------------------
+// DROP CAPS
+// Drop caps first letter on first paragraph only
+// p:first-child:first-letter,
+p.dropcap:first-letter,
+p[dropcap]:first-letter {
+	// full size column regardless of size
+    --text-max-width:auto;
+    box-sizing:border-box;
+    float: left;
+    //padding:0 1.2rem 0 0 ;
+    line-height:1;
+    //--font-size:calc( var(--font-base) * var(--drop-cap-lines) );
+    //font-size:calc( var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--font-size) );
+    //font-size: calc( 1rem * var(--zoom) * var(--font-scale) * var(--font-zoom) * var(--line-height) * var(--drop-cap-lines) );
+    --font-scale:calc( var(--drop-cap-lines) );
+    font-size:calc( var(--zoom, 1) * var(--font-zoom) * var(--font-scale) * var(--font-size) );
+    // OPINIONATED : Change to serif
+    //font-family:var(--font-family-serif);
+}
+
+// Drop Caps native
+// https://caniuse.com/#feat=css-initial-letter
+@supports(initial-letter:normal){
+    // :first-child
+    p.dropcap:first-letter,
+    p[dropcap]:first-letter {
+        font-size:auto;
+        // Use built in method for resize
+        initial-letter: var(--drop-cap-lines);
+        // FIX: safari
+        margin-top: 1em;
+    }
+}
+
+// ---------------------------- 8< -------------------------------
+///////////////////////////////////////////////////////////////////
