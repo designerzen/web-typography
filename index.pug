@@ -113,11 +113,12 @@ body
             p.
                 You can go utterly nuts with changing the size of any html element inline with very simple syntax.
                 Check out the following examples for how to really play with the library
+            
             code
                 pre h1 style="--font-scale:1.2"
-                
-                
-            pre h1 style="--zoom:4.5"
+                    
+            code   
+                pre h1 style="--zoom:4.5"
 
         section#settings
 
@@ -171,7 +172,12 @@ body
                 legend Font Size
                 label(for="font-size-min") Min Font Size
                 select#font-size-min(name="font-size-min")
-                    option(value="1") 1
+                    option(value="0.5") 0.5
+                    option(value="0.6") 0.6
+                    option(value="0.7") 0.7
+                    option(value="0.8") 0.8
+                    option(value="0.9") 0.9
+                    option(value="1" selected) 1
                     option(value="1.25") 1.25
                     option(value="1.5") 1.5
                     option(value="1.75") 1.75
