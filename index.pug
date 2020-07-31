@@ -41,6 +41,10 @@ head
             padding: 0;
             margin:0;
         }
+        img{
+            max-width:100%;
+            height:auto;
+        }
 body
 
     header 
@@ -94,11 +98,16 @@ body
                 kbd <abbr>CTRl</abbr>+
             p 
                 kbd <abbr>CTRl</abbr>-
-                
+
             blockquote
                 p Better to have a beer than a lobotomy
                 cite Bertrand Russel
 
+            figure
+                img(src="https://picsum.photos/800/600" width="800" height="600" alt="random image")
+                figcaption Fig1. - A view of the pulpit rock in Norway.</figcaption>
+
+                
         // Custom sizes
         section#custom
             p.
