@@ -112,8 +112,7 @@ $readable-width:50ch;
 	// Set the baseline font size for universal use
 	//--font-base:calc( var(--font-size-min) + var(---font-size-range) * var(--viewport-range ) );
 	// calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width])));
-	--font-base:calc( var(--text-size-min) + (var(--font-size-max) - var(--font-size-min)) * (( 100vw - var(--viewport-width-min-min)) / (var(--viewport-width-min-max) - var(--viewport-width-min-min) ) ) );
-	
+	--font-base:calc( var(--text-size-min) + var(--font-size-range) * (( 100vw - var(--viewport-width-min)) / var(--viewport-range ) ) );
 	// --font-base:calc( var(---font-size-range) * ((100vw - var(--font-viewport-min)) / var(---font-size-range)) );
 	// --font-base:calc(var(--font-size-min) + 1vmin );
 	//--font-base: calc(16px + 1vw + 1vh + .25vmin);
