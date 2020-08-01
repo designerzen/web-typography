@@ -12,8 +12,8 @@
   },
   "scripts": {
     "clean": "rm -rf ./lib/",
-    "build": "parcel build ./index.pug --out-dir ./lib/",
-    "dist": "parcel build ./typography.scss --out-dir ./lib/",
+    "build": "parcel build ./index.pug --out-dir ./test/",
+    "dist": "parcel build ./typography.scss --no-source-maps --out-dir ./lib/",
     "help": "parcel help build",
     "serve": "parcel serve ./index.pug",
     "browserlist": "npx browserslist"
